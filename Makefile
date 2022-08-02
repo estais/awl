@@ -9,6 +9,7 @@ BINDIR = bin
 TARGET = $(BINDIR)/awl
 
 OBJS = \
+       src/err.o \
        src/main.o
 
 all: $(TARGET)
