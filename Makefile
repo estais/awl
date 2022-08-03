@@ -12,6 +12,7 @@ OBJS = \
        src/err.o \
        src/mem.o \
        src/vec.o \
+       src/file.o \
        src/main.o
 
 all: $(TARGET)
