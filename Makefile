@@ -11,6 +11,7 @@ TARGET = $(BINDIR)/awl
 OBJS = \
        src/err.o \
        src/mem.o \
+       src/vec.o \
        src/main.o
 
 all: $(TARGET)
