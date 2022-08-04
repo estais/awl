@@ -13,6 +13,7 @@ OBJS = \
        src/mem.o \
        src/vec.o \
        src/file.o \
+       src/strbuf.o \
        src/main.o
 
 all: $(TARGET)
