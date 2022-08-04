@@ -4,6 +4,7 @@
 
 CC = gcc
 CFLAGS = -O2 -Wall -Wextra -pedantic -g -Isrc
+LDLIBS = -lm
 
 BINDIR = bin
 TARGET = $(BINDIR)/awl
@@ -20,7 +21,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	if ! [ -d $(BINDIR) ]; then mkdir $(BINDIR); fi
-	$(CC) $^ -o $@
+	$(CC) $^ $(LDLIBS) -o $@
 
 .c.o:
 	$(CC) $< $(CFLAGS) -c -o $@
