@@ -16,7 +16,7 @@
 #define SB_INITALLOC_KWIDEN 50
 #define SB_INITALLOC_NUMLIT 25
 
-/* One-with span for lexer errors */
+/* One-width span for lexer errors */
 #define LEXERRSPAN (Span){ .linendx = lexer->linendx, .first = lexer->chndx, .last = lexer->chndx + 1 }
 
 static void advancen(Lexer *lexer, size_t n);
