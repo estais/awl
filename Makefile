@@ -15,6 +15,7 @@ OBJS = \
        src/vec.o \
        src/file.o \
        src/strbuf.o \
+       src/lexer.o \
        src/main.o
 
 all: $(TARGET)
