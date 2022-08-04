@@ -27,7 +27,7 @@ static void linelex(Lexer *lexer, size_t linendx);
 static void lex_kwiden(Lexer *lexer);
 static void lex_numlit(Lexer *lexer);
 static void lex_op(Lexer *lexer);
-static token_kind kindofkwiden(const char *str, size_t length);
+static token_kind kindofkwiden(const char *str);
 
 /*
  * Enumeration of contents for tokens whose content is static (for each token
@@ -35,6 +35,7 @@ static token_kind kindofkwiden(const char *str, size_t length);
  * content of each TOKEN_RETURN token is "return").
  */
 static const char *tktab[] = {
+	[TOKEN_FUN] = "fun",
 	[TOKEN_RETURN] = "return",
 
 	[TOKEN_ARROW] = "->",
@@ -52,7 +53,7 @@ Lexer *lexer_new()
 	lexer->file = NULL;
 	lexer->linendx = 0;
 	lexer->chndx = 0;
-	lexer->vtokens = NULL;
+	lexer->tokens = NULL;
 	lexer->ntokens = 0;
 
 	return lexer;
@@ -73,9 +74,9 @@ Token *lexer_run(Lexer *lexer, File *file)
 		.content = NULL,
 		.span = { .linendx = 0, .first = 0, .last = 0 },
 	};
-	vec_push(lexer->vtokens, &token, &lexer->ntokens, sizeof(Token));
+	vec_push(lexer->tokens, &token, &lexer->ntokens, sizeof(Token));
 
-	return lexer->vtokens;
+	return lexer->tokens;
 }
 
 void lexer_reset(Lexer *lexer)
@@ -83,7 +84,7 @@ void lexer_reset(Lexer *lexer)
 	lexer->file = NULL;
 	lexer->linendx = 0;
 	lexer->chndx = 0;
-	lexer->vtokens = NULL;
+	lexer->tokens = NULL;
 	lexer->ntokens = 0;
 }
 
@@ -153,12 +154,12 @@ static void lex_kwiden(Lexer *lexer)
 	};
 
 	Token token = {
-		.kind = kindofkwiden(str, length),
+		.kind = kindofkwiden(str),
 		.content = str,
 		.span = span,
 	};
 
-	vec_push(lexer->vtokens, &token, &lexer->ntokens, sizeof(Token));
+	vec_push(lexer->tokens, &token, &lexer->ntokens, sizeof(Token));
 }
 
 static void lex_numlit(Lexer *lexer)
@@ -196,7 +197,7 @@ static void lex_numlit(Lexer *lexer)
 		.span = span,
 	};
 
-	vec_push(lexer->vtokens, &token, &lexer->ntokens, sizeof(Token));
+	vec_push(lexer->tokens, &token, &lexer->ntokens, sizeof(Token));
 }
 
 static void lex_op(Lexer *lexer)
@@ -242,12 +243,13 @@ static void lex_op(Lexer *lexer)
 		.span = span,
 	};
 
-	vec_push(lexer->vtokens, &token, &lexer->ntokens, sizeof(Token));
+	vec_push(lexer->tokens, &token, &lexer->ntokens, sizeof(Token));
 }
 
-static token_kind kindofkwiden(const char *str, size_t length)
+static token_kind kindofkwiden(const char *str)
 {
-#define CMP(kind) if (!strncmp(str, tktab[kind], length)) return kind;
+#define CMP(kind) if (!strcmp(str, tktab[kind])) return kind;
+	CMP(TOKEN_FUN);
 	CMP(TOKEN_RETURN);
 #undef CMP
 	return TOKEN_IDENTIFIER;

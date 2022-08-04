@@ -10,24 +10,27 @@
 #include "file.h"
 #include "span.h"
 
+#define EMPTYTOKEN (Token){ .kind = _TOKEN_NULL, .content = NULL, .span = (Span){0} }
+
 typedef enum token_kind {
-	_TOKEN_NULL,
+	_TOKEN_NULL = 0,
 
-	TOKEN_EOF,
+	TOKEN_EOF = 0x01,
 
-	TOKEN_IDENTIFIER,
-	TOKEN_NUMLIT_INT,
-	TOKEN_NUMLIT_FLT,
+	TOKEN_IDENTIFIER = 0x02,
+	TOKEN_NUMLIT_INT = 0x04,
+	TOKEN_NUMLIT_FLT = 0x08,
 
-	TOKEN_RETURN,
+	TOKEN_FUN = 0x10,
+	TOKEN_RETURN = 0x20,
 
-	TOKEN_ARROW,
-	TOKEN_LPAREN,
-	TOKEN_RPAREN,
-	TOKEN_LBRACE,
-	TOKEN_RBRACE,
-	TOKEN_SEMICOLON,
-	TOKEN_COMMA,
+	TOKEN_ARROW = 0x40,
+	TOKEN_LPAREN = 0x80,
+	TOKEN_RPAREN = 0x100,
+	TOKEN_LBRACE = 0x200,
+	TOKEN_RBRACE = 0x300,
+	TOKEN_SEMICOLON = 0x400,
+	TOKEN_COMMA = 0x600,
 } token_kind;
 
 typedef struct Token {
@@ -41,7 +44,7 @@ typedef struct Lexer {
 	int linendx;
 	int chndx;
 
-	Token *vtokens;
+	Token *tokens;
 	size_t ntokens;
 } Lexer;
 
