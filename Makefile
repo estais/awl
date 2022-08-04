@@ -16,6 +16,7 @@ OBJS = \
        src/file.o \
        src/strbuf.o \
        src/lexer.o \
+       src/parser.o \
        src/main.o
 
 all: $(TARGET)
