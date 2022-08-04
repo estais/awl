@@ -1,4 +1,4 @@
-main() -> u8
+fun main() u8
 {
 	return 0;
 }
