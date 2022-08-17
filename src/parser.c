@@ -267,6 +267,8 @@ static PBlock *parse_block(Parser *parser)
 		vec_push(pblock->statements, &statement, &pblock->nstatements, sizeof(PStatement *));
 	}
 
+	advance(parser); /* } */
+
 	return pblock;
 }
 
