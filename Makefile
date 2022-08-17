@@ -17,6 +17,7 @@ OBJS = \
        src/strbuf.o \
        src/lexer.o \
        src/parser.o \
+       src/type.o \
        src/elf.o \
        src/main.o
 
