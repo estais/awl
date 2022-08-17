@@ -41,9 +41,10 @@ static const Type *primitives[] = {
 static const size_t nprimitives = (sizeof(primitives) / sizeof(*primitives));
 
 static typendx check_type(Typechecker *tc, PType *ptype);
+static TVariable *check_variable(Typechecker *tc, PVariable *pvar, scopendx scope);
+static TExpression *check_expression(Typechecker *tc, PExpression *pexpression, typendx ex);
 static TStatement *check_statement(Typechecker *tc, PStatement *pstatement);
 static TBlock *check_block(Typechecker *tc, PBlock *pblock, scopendx scope);
-static TVariable *check_variable(Typechecker *tc, PVariable *pvar, scopendx scope);
 static TFun *check_fun(Typechecker *tc, PFun *pfun);
 
 static void add_variable(Typechecker *tc, TVariable *tvar, scopendx scope);
@@ -55,6 +56,16 @@ static funndx find_fun(Typechecker *tc, Token iden);
 
 static scopendx scope_add(Typechecker *tc, scopendx parent);
 static Scope *scope_get(Typechecker *tc, scopendx scope);
+
+static void numcompat(Typechecker *tc, Number *n, typendx ndx)
+{
+	Type *t = tc->tfile->types[ndx];
+	size_t tbits = t->size * 8;
+	
+	if (n->bits > tbits) {
+		err_source(tc->file, n->span, "size mismatch; expected %d bits but got %d bits", tbits, n->bits);
+	}
+}
 
 Typechecker *typechecker_new()
 {
@@ -77,6 +88,7 @@ TFile *typechecker_run(Typechecker *tc, File *file, PFile *pfile)
 	tc->tfile->nscopes = 0;
 	tc->tfile->tfuns = NULL;
 	tc->tfile->ntfuns = 0;
+	tc->tfile->fretcurs = NONDX;
 	tc->tfile->tvariables = 0;
 	tc->tfile->ntvariables = 0;
 	tc->tfile->types = NULL;
@@ -122,6 +134,46 @@ static typendx check_type(Typechecker *tc, PType *ptype)
 	return NONDX;
 }
 
+static TVariable *check_variable(Typechecker *tc, PVariable *pvar, scopendx scope)
+{
+	TVariable *tvariable = alloct(TVariable);
+	tvariable->identifier = pvar->identifier;
+	tvariable->type = NONDX;
+
+	{
+		Token iden = tvariable->identifier;
+		varndx ndx = NONDX;
+		if ((ndx = find_variable(tc, iden, scope)) != NONDX) {
+			err_source(tc->file, iden.span, "redefinition of variable '%s'", iden.content);
+		}
+	}
+
+	tvariable->type = check_type(tc, pvar->type);
+
+	return tvariable;
+}
+
+static TExpression *check_expression(Typechecker *tc, PExpression *pexpression, typendx ex)
+{
+	TExpression *texpression = alloct(TExpression);
+	texpression->variant = _TNODE_NULL;
+	texpression->number = NULL;;
+
+	switch (pexpression->variant) {
+		case PEXPRESSION_NUMLIT: {
+			Number *n = pexpression->number;
+			numcompat(tc, n, ex);
+
+			texpression->variant = TEXPRESSION_NUMLIT;
+			texpression->number = n;
+			break;
+		}
+		default: break;
+	}
+
+	return texpression;
+}
+
 static TStatement *check_statement(Typechecker *tc, PStatement *pstatement)
 {
 	TStatement *tstatement = alloct(TStatement);
@@ -131,6 +183,7 @@ static TStatement *check_statement(Typechecker *tc, PStatement *pstatement)
 	switch (pstatement->variant) {
 		case PSTATEMENT_RETURN: {
 			tstatement->variant = TSTATEMENT_RETURN;
+			tstatement->expr = check_expression(tc, pstatement->expr, tc->tfile->fretcurs);
 			break;
 		}
 		default: break;
@@ -154,25 +207,6 @@ static TBlock *check_block(Typechecker *tc, PBlock *pblock, scopendx parent)
 	}
 
 	return tblock;
-}
-
-static TVariable *check_variable(Typechecker *tc, PVariable *pvar, scopendx scope)
-{
-	TVariable *tvariable = alloct(TVariable);
-	tvariable->identifier = pvar->identifier;
-	tvariable->type = NONDX;
-
-	{
-		Token iden = tvariable->identifier;
-		varndx ndx = NONDX;
-		if ((ndx = find_variable(tc, iden, scope)) != NONDX) {
-			err_source(tc->file, iden.span, "redefinition of variable '%s'", iden.content);
-		}
-	}
-
-	tvariable->type = check_type(tc, pvar->type);
-
-	return tvariable;
 }
 
 static TFun *check_fun(Typechecker *tc, PFun *pfun)
@@ -204,6 +238,8 @@ static TFun *check_fun(Typechecker *tc, PFun *pfun)
 		tfun->rettype = check_type(tc, pfun->rettype);
 	}
 
+	tc->tfile->fretcurs = tfun->rettype;
+
 	tfun->block = check_block(tc, pfun->block, tfun->scope);
 
 	return tfun;
@@ -221,15 +257,11 @@ static void add_variable(Typechecker *tc, TVariable *tvar, scopendx scope)
 	vec_push(obj->vars, &ndx, &obj->nvars, sizeof(varndx));
 }
 
-static void add_fun(Typechecker *tc, TFun *tfun)
-{
+static void add_fun(Typechecker *tc, TFun *tfun) {
 	Scope *scope = scope_get(tc, 0);
 	funndx ndx = tc->tfile->ntfuns;
 
-	/* Push object */
 	vec_push(tc->tfile->tfuns, &tfun, &tc->tfile->ntfuns, sizeof(TFun *));
-
-	/* Push index */
 	vec_push(scope->funs, &ndx, &scope->nfuns, sizeof(funndx));
 }
 
@@ -301,7 +333,7 @@ static scopendx scope_add(Typechecker *tc, scopendx parent)
 
 	if (parent != NONDX) {
 		Scope *parobj = scope_get(tc, parent);
-		vec_push(parobj->children, &ndx, &parobj->nchildren, sizeof(int));
+		vec_push(parobj->children, &ndx, &parobj->nchildren, sizeof(scopendx));
 	}
 
 	return ndx;

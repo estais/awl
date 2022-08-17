@@ -64,6 +64,10 @@ typedef struct TVariable {
 
 typedef struct TExpression {
 	t_node_variant variant;
+
+	union {
+		Number *number;
+	};
 } TExpression;
 
 typedef struct TStatement {
@@ -95,6 +99,7 @@ typedef struct TFile {
 
 	TFun **tfuns;
 	size_t ntfuns;
+	typendx fretcurs; /* when handling a function, store its return type here */
 
 	TVariable **tvariables;
 	size_t ntvariables;
