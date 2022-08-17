@@ -10,7 +10,8 @@
 #include <stdint.h>
 #include "lexer.h"
 
-typedef struct NumericLiteral {
+typedef struct Number {
+	Span span;
 	size_t bits;
 	bool sig;
 
@@ -24,9 +25,9 @@ typedef struct NumericLiteral {
 		int32_t s32;
 		int64_t s64;
 	};
-} NumericLiteral;
+} Number;
 
-NumericLiteral numlit_make(Token from);
+Number *number_make(Token from);
 
 /*
  * Some parser nodes have different variants; for example, a statement may be a
@@ -60,7 +61,7 @@ typedef struct PExpression {
 	p_node_variant variant;
 
 	union {
-		NumericLiteral numlit;
+		Number *number;
 	};
 } PExpression;
 

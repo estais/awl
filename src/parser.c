@@ -24,9 +24,10 @@ static PStatement *parse_statement(Parser *parser);
 static PBlock *parse_block(Parser *parser);
 static PFun *parse_fun(Parser *parser);
 
-NumericLiteral numlit_make(Token from)
+Number *number_make(Token from)
 {
-	NumericLiteral numlit;
+	Number *number = alloct(Number);
+	number->span = from.span;
 
 	if (from.kind == TOKEN_NUMLIT_FLT) {
 		err_internal("floating point numbers are not yet implemented");
@@ -42,45 +43,45 @@ NumericLiteral numlit_make(Token from)
 		/* Unsigned */
 
 		if (asint <= UINT8_MAX) {
-			numlit.bits = 8;
-			numlit.sig = false;
-			numlit.u8 = (uint8_t)asint;
+			number->bits = 8;
+			number->sig = false;
+			number->u8 = (uint8_t)asint;
 		} else if (asint > UINT8_MAX && asint <= UINT16_MAX) {
-			numlit.bits = 16;
-			numlit.sig = false;
-			numlit.u16 = (uint16_t)asint;
+			number->bits = 16;
+			number->sig = false;
+			number->u16 = (uint16_t)asint;
 		} else if (asint > UINT16_MAX && asint <= UINT32_MAX) {
-			numlit.bits = 32;
-			numlit.sig = false;
-			numlit.u32 = (uint32_t)asint;
+			number->bits = 32;
+			number->sig = false;
+			number->u32 = (uint32_t)asint;
 		} else if (asint > UINT32_MAX && asint <= UINT64_MAX) {
-			numlit.bits = 64;
-			numlit.sig = false;
-			numlit.u64 = (uint64_t)asint;
+			number->bits = 64;
+			number->sig = false;
+			number->u64 = (uint64_t)asint;
 		}
 	} else if (asint < 0) {
 		/* Signed */
 
 		if (asint <= INT8_MAX) {
-			numlit.bits = 8;
-			numlit.sig = true;
-			numlit.s8 = (int8_t)asint;
+			number->bits = 8;
+			number->sig = true;
+			number->s8 = (int8_t)asint;
 		} else if (asint > INT8_MAX && asint <= INT16_MAX) {
-			numlit.bits = 16;
-			numlit.sig = true;
-			numlit.s16 = (int16_t)asint;
+			number->bits = 16;
+			number->sig = true;
+			number->s16 = (int16_t)asint;
 		} else if (asint > INT16_MAX && asint <= INT32_MAX) {
-			numlit.bits = 32;
-			numlit.sig = true;
-			numlit.s32 = (int32_t)asint;
+			number->bits = 32;
+			number->sig = true;
+			number->s32 = (int32_t)asint;
 		} else if (asint > INT32_MAX && asint <= INT64_MAX) {
-			numlit.bits = 64;
-			numlit.sig = true;
-			numlit.s64 = (int64_t)asint;
+			number->bits = 64;
+			number->sig = true;
+			number->s64 = (int64_t)asint;
 		}
 	}
 
-	return numlit;
+	return number;
 }
 
 Parser *parser_new()
@@ -200,13 +201,13 @@ static PExpression *parse_expression(Parser *parser)
 {
 	PExpression *pexpression = alloct(PExpression);
 	pexpression->variant = _PNODE_NULL;
-	pexpression->numlit = (NumericLiteral){ 0 };
+	pexpression->number = NULL;
 
 	switch (istk(parser, TOKEN_NUMLIT_INT | TOKEN_NUMLIT_FLT)) {
 		case TOKEN_NUMLIT_INT:
 		case TOKEN_NUMLIT_FLT: {
 			pexpression->variant = PEXPRESSION_NUMLIT;
-			pexpression->numlit = numlit_make(current(parser));
+			pexpression->number = number_make(current(parser));
 
 			advance(parser); /* numeric-literal */
 			break;
