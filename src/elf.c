@@ -183,12 +183,12 @@ static uint8_t *createsymtab(Elf *elf, uint64_t *nlocalsyms)
 		if (sym.info >> 4 != STB_LOCAL) continue;
 
 		uint8_t *ent = res + entndx * STENTSIZE;
-		*(uint32_t *)(ent + 0) = sym.name;
-		*(uint8_t *)(ent + 4) = sym.info;
-		*(uint8_t *)(ent + 5) = sym.other;
-		*(uint16_t *)(ent + 6) = sym.shndx;
-		*(uint64_t *)(ent + 8) = sym.value;
-		*(uint64_t *)(ent + 16) = sym.size;
+		ENTSET(ent, uint32_t, 0, sym.name);
+		ENTSET(ent, uint8_t, 4, sym.info);
+		ENTSET(ent, uint8_t, 5, sym.other);
+		ENTSET(ent, uint16_t, 6, sym.shndx);
+		ENTSET(ent, uint64_t, 8, sym.value);
+		ENTSET(ent, uint64_t, 16, sym.size);
 
 		++entndx;
 		++(*nlocalsyms);
