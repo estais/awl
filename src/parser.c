@@ -106,14 +106,17 @@ PFile *parser_run(Parser *parser, File *file)
 	parser->pfile->pfuns = NULL;
 	parser->pfile->npfuns = 0;
 
-	switch (istk(parser, TOKEN_FUN)) {
-		case TOKEN_FUN: {
-			PFun *pfun = parse_fun(parser);
-			vec_push(parser->pfile->pfuns, &pfun, &parser->pfile->npfuns, sizeof(PFun *));
 
-			break;
+	while (current(parser).kind != TOKEN_EOF) {
+		switch (istk(parser, TOKEN_FUN)) {
+			case TOKEN_FUN: {
+				PFun *pfun = parse_fun(parser);
+				vec_push(parser->pfile->pfuns, &pfun, &parser->pfile->npfuns, sizeof(PFun *));
+
+				break;
+			}
+			default: err_source(parser->file, current(parser).span, "unexpected token");
 		}
-		default: err_source(parser->file, current(parser).span, "unexpected token");
 	}
 
 	lexer_reset(parser->lexer);
