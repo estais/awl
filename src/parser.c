@@ -7,7 +7,6 @@
 #include "parser.h"
 
 #include <stdlib.h>
-#include <stdbool.h>
 #include "vec.h"
 #include "mem.h"
 #include "err.h"
@@ -43,32 +42,40 @@ NumericLiteral numlit_make(Token from)
 		/* Unsigned */
 
 		if (asint <= UINT8_MAX) {
-			numlit.size = NUMLIT_U8;
+			numlit.bits = 8;
+			numlit.sig = false;
 			numlit.u8 = (uint8_t)asint;
 		} else if (asint > UINT8_MAX && asint <= UINT16_MAX) {
-			numlit.size = NUMLIT_U16;
+			numlit.bits = 16;
+			numlit.sig = false;
 			numlit.u16 = (uint16_t)asint;
 		} else if (asint > UINT16_MAX && asint <= UINT32_MAX) {
-			numlit.size = NUMLIT_U32;
+			numlit.bits = 32;
+			numlit.sig = false;
 			numlit.u32 = (uint32_t)asint;
 		} else if (asint > UINT32_MAX && asint <= UINT64_MAX) {
-			numlit.size = NUMLIT_U64;
+			numlit.bits = 64;
+			numlit.sig = false;
 			numlit.u64 = (uint64_t)asint;
 		}
 	} else if (asint < 0) {
 		/* Signed */
 
 		if (asint <= INT8_MAX) {
-			numlit.size = NUMLIT_S8;
+			numlit.bits = 8;
+			numlit.sig = true;
 			numlit.s8 = (int8_t)asint;
 		} else if (asint > INT8_MAX && asint <= INT16_MAX) {
-			numlit.size = NUMLIT_S16;
+			numlit.bits = 16;
+			numlit.sig = true;
 			numlit.s16 = (int16_t)asint;
 		} else if (asint > INT16_MAX && asint <= INT32_MAX) {
-			numlit.size = NUMLIT_S32;
+			numlit.bits = 32;
+			numlit.sig = true;
 			numlit.s32 = (int32_t)asint;
 		} else if (asint > INT32_MAX && asint <= INT64_MAX) {
-			numlit.size = NUMLIT_S64;
+			numlit.bits = 64;
+			numlit.sig = true;
 			numlit.s64 = (int64_t)asint;
 		}
 	}

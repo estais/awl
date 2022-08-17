@@ -6,20 +6,13 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "lexer.h"
 
 typedef struct NumericLiteral {
-	enum {
-		NUMLIT_U8,
-		NUMLIT_U16,
-		NUMLIT_U32,
-		NUMLIT_U64,
-		NUMLIT_S8,
-		NUMLIT_S16,
-		NUMLIT_S32,
-		NUMLIT_S64,
-	} size;
+	size_t bits;
+	bool sig;
 
 	union {
 		uint8_t u8;
