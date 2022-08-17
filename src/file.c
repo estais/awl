@@ -19,7 +19,7 @@ File *file_new(const char *path)
 {
 	File *file = alloct(File);
 	file->path = path;
-	file->vlines = NULL;
+	file->lines = NULL;
 	file->nlines = 0;
 
 	int fd = -1;
@@ -41,7 +41,7 @@ File *file_new(const char *path)
 
 	char *line = strtok(copy, "\n");
 	while (line) {
-		vec_push(file->vlines, &line, &file->nlines, sizeof(char *));
+		vec_push(file->lines, &line, &file->nlines, sizeof(char *));
 		line = strtok(NULL, "\n");
 	}
 

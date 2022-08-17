@@ -10,7 +10,7 @@
 
 typedef struct File {
 	const char *path;
-	char **vlines;
+	char **lines;
 	size_t nlines;
 } File;
 

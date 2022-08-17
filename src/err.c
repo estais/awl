@@ -47,7 +47,7 @@ void err_user(const char *fmt, ...)
 void err_source(File *file, Span span, const char *fmt, ...)
 {
 	/* Source excerpt */
-	const char *src = file->vlines[span.linendx];
+	const char *src = file->lines[span.linendx];
 
 	/* Index -> Count values */
 	int linenum = span.linendx + 1;

@@ -100,7 +100,7 @@ static void advance(Lexer *lexer)
 
 static char peek(Lexer *lexer, size_t n)
 {
-	return lexer->file->vlines[lexer->linendx][lexer->chndx + n];
+	return lexer->file->lines[lexer->linendx][lexer->chndx + n];
 }
 
 static char current(Lexer *lexer)
