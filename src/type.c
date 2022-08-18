@@ -157,7 +157,7 @@ static TExpression *check_expression(Typechecker *tc, PExpression *pexpression, 
 {
 	TExpression *texpression = alloct(TExpression);
 	texpression->variant = _TNODE_NULL;
-	texpression->number = NULL;;
+	texpression->number = NULL;
 
 	switch (pexpression->variant) {
 		case PEXPRESSION_NUMLIT: {
