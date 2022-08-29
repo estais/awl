@@ -19,6 +19,7 @@ OBJS = \
        src/parser.o \
        src/type.o \
        src/elf.o \
+       src/gen.o \
        src/main.o
 
 all: $(TARGET)
