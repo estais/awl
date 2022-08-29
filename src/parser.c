@@ -7,6 +7,7 @@
 #include "parser.h"
 
 #include <stdlib.h>
+#include <ctype.h>
 #include "vec.h"
 #include "mem.h"
 #include "err.h"
@@ -24,6 +25,21 @@ static PStatement *parse_statement(Parser *parser);
 static PBlock *parse_block(Parser *parser);
 static PFun *parse_fun(Parser *parser);
 
+static __int128 atoi128(const char *s)
+{
+	const char *p = s;
+	__int128 v = 0;
+
+	while (isspace(*p)) ++p;
+
+	while (*p >= '0' && *p <= '9') {
+		v = (10 * v) + (*p - '0');
+		++p;
+	}
+
+	return v;
+}
+
 Number *number_make(Token from)
 {
 	Number *number = alloct(Number);
@@ -37,47 +53,47 @@ Number *number_make(Token from)
 		err_internal("cannot convert token of type %d into a numeric literal", (int)from.kind);
 	}
 
-	__int128_t asint = strtol(from.content, NULL, 10);
+	__int128 i = atoi128(from.content);
 
-	if (asint >= 0) {
+	if (i >= 0) {
 		/* Unsigned */
 
-		if (asint <= UINT8_MAX) {
+		if (i <= UINT8_MAX) {
 			number->bits = 8;
 			number->sig = false;
-			number->u8 = (uint8_t)asint;
-		} else if (asint > UINT8_MAX && asint <= UINT16_MAX) {
+			number->u8 = (uint8_t)i;
+		} else if (i > UINT8_MAX && i <= UINT16_MAX) {
 			number->bits = 16;
 			number->sig = false;
-			number->u16 = (uint16_t)asint;
-		} else if (asint > UINT16_MAX && asint <= UINT32_MAX) {
+			number->u16 = (uint16_t)i;
+		} else if (i > UINT16_MAX && i <= UINT32_MAX) {
 			number->bits = 32;
 			number->sig = false;
-			number->u32 = (uint32_t)asint;
-		} else if (asint > UINT32_MAX && asint <= UINT64_MAX) {
+			number->u32 = (uint32_t)i;
+		} else if (i > UINT32_MAX && i <= UINT64_MAX) {
 			number->bits = 64;
 			number->sig = false;
-			number->u64 = (uint64_t)asint;
+			number->u64 = (uint64_t)i;
 		}
-	} else if (asint < 0) {
+	} else if (i < 0) {
 		/* Signed */
 
-		if (asint <= INT8_MAX) {
+		if (i <= INT8_MAX) {
 			number->bits = 8;
 			number->sig = true;
-			number->s8 = (int8_t)asint;
-		} else if (asint > INT8_MAX && asint <= INT16_MAX) {
+			number->s8 = (int8_t)i;
+		} else if (i > INT8_MAX && i <= INT16_MAX) {
 			number->bits = 16;
 			number->sig = true;
-			number->s16 = (int16_t)asint;
-		} else if (asint > INT16_MAX && asint <= INT32_MAX) {
+			number->s16 = (int16_t)i;
+		} else if (i > INT16_MAX && i <= INT32_MAX) {
 			number->bits = 32;
 			number->sig = true;
-			number->s32 = (int32_t)asint;
-		} else if (asint > INT32_MAX && asint <= INT64_MAX) {
+			number->s32 = (int32_t)i;
+		} else if (i > INT32_MAX && i <= INT64_MAX) {
 			number->bits = 64;
 			number->sig = true;
-			number->s64 = (int64_t)asint;
+			number->s64 = (int64_t)i;
 		}
 	}
 
