@@ -12,13 +12,20 @@
 #include "err.h"
 
 /* Get the nth byte of some value */
-#define NBYT(v, n) ((v >> 8 * n) & 0xFF)
+#define NBYTE(v, n) ((v >> 8 * n) & 0xFF)
+
+/* Get the nth bit of some value */
+#define NBIT(v, n) ((v >> n) & 1)
+
+/* Set the nth bit of some value to state (s) */
+#define NBITSET(v, n, s) (v |= s << n)
 
 /* r/m part of ModR/M; aka, the register number */
 typedef unsigned char reg;
 
 static const reg RAX = 0;
 
+static uint8_t modrm(uint8_t mod, uint8_t op, uint8_t rm);
 static void gen_expr(Gen *gen, TExpression *expression, reg dest);
 static void gen_statement(Gen *gen, TStatement *statement);
 static void gen_fun(Gen *gen, size_t ndx);
@@ -55,6 +62,27 @@ void gen_reset(Gen *gen)
 	gen->elf = NULL;
 }
 
+static uint8_t modrm(uint8_t mod, uint8_t op, uint8_t rm)
+{
+	uint8_t modrm = 0;
+
+	/* r/m */
+	NBITSET(modrm, 0, NBIT(rm, 0));
+	NBITSET(modrm, 1, NBIT(rm, 1));
+	NBITSET(modrm, 2, NBIT(rm, 2));
+
+	/* op */
+	NBITSET(modrm, 3, NBIT(op, 0));
+	NBITSET(modrm, 4, NBIT(op, 1));
+	NBITSET(modrm, 5, NBIT(op, 2));
+
+	/* mod */
+	NBITSET(modrm, 6, NBIT(mod, 0));
+	NBITSET(modrm, 7, NBIT(mod, 1));
+
+	return modrm;
+}
+
 static void gen_expr(Gen *gen, TExpression *expression, reg dest)
 {
 	switch (expression->variant) {
@@ -82,8 +110,8 @@ static void gen_expr(Gen *gen, TExpression *expression, reg dest)
 				case 16: {
 					uint8_t temp[] = {
 						0xB8 + dest,
-						NBYT(number->u16, 0),
-						NBYT(number->u16, 1),
+						NBYTE(number->u16, 0),
+						NBYTE(number->u16, 1),
 						0x00,
 						0x00,
 					};
@@ -96,10 +124,10 @@ static void gen_expr(Gen *gen, TExpression *expression, reg dest)
 				case 32: {
 					uint8_t temp[] = {
 						0xB8 + dest,
-						NBYT(number->u32, 0),
-						NBYT(number->u32, 1),
-						NBYT(number->u32, 2),
-						NBYT(number->u32, 3),
+						NBYTE(number->u32, 0),
+						NBYTE(number->u32, 1),
+						NBYTE(number->u32, 2),
+						NBYTE(number->u32, 3),
 					};
 					ndata = sizeof(temp);
 					data = acalloc(ndata, sizeof(uint8_t));
@@ -111,14 +139,14 @@ static void gen_expr(Gen *gen, TExpression *expression, reg dest)
 					uint8_t temp[] = {
 						0x48,
 						0xB8 + dest,
-						NBYT(number->u64, 0),
-						NBYT(number->u64, 1),
-						NBYT(number->u64, 2),
-						NBYT(number->u64, 3),
-						NBYT(number->u64, 4),
-						NBYT(number->u64, 5),
-						NBYT(number->u64, 6),
-						NBYT(number->u64, 7),
+						NBYTE(number->u64, 0),
+						NBYTE(number->u64, 1),
+						NBYTE(number->u64, 2),
+						NBYTE(number->u64, 3),
+						NBYTE(number->u64, 4),
+						NBYTE(number->u64, 5),
+						NBYTE(number->u64, 6),
+						NBYTE(number->u64, 7),
 					};
 
 					ndata = sizeof(temp);
