@@ -82,23 +82,23 @@ static uint8_t stack(Gen *gen, uint8_t size)
 
 static uint8_t modrm(uint8_t mod, uint8_t op, uint8_t rm)
 {
-	uint8_t modrm = 0;
+	uint8_t i = 0;
 
 	/* r/m */
-	NBITSET(modrm, 0, NBIT(rm, 0));
-	NBITSET(modrm, 1, NBIT(rm, 1));
-	NBITSET(modrm, 2, NBIT(rm, 2));
+	NBITSET(i, 0, NBIT(rm, 0));
+	NBITSET(i, 1, NBIT(rm, 1));
+	NBITSET(i, 2, NBIT(rm, 2));
 
 	/* op */
-	NBITSET(modrm, 3, NBIT(op, 0));
-	NBITSET(modrm, 4, NBIT(op, 1));
-	NBITSET(modrm, 5, NBIT(op, 2));
+	NBITSET(i, 3, NBIT(op, 0));
+	NBITSET(i, 4, NBIT(op, 1));
+	NBITSET(i, 5, NBIT(op, 2));
 
 	/* mod */
-	NBITSET(modrm, 6, NBIT(mod, 0));
-	NBITSET(modrm, 7, NBIT(mod, 1));
+	NBITSET(i, 6, NBIT(mod, 0));
+	NBITSET(i, 7, NBIT(mod, 1));
 
-	return modrm;
+	return i;
 }
 
 static void gen_expr(Gen *gen, TExpression *expression, reg dest)
