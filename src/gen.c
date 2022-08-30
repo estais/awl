@@ -26,6 +26,13 @@
 typedef unsigned char reg;
 
 static const reg RAX = 0;
+static const reg RCX = 1;
+static const reg RDX = 2;
+static const reg RBP = 5;
+static const reg RSI = 6;
+static const reg RDI = 7;
+
+static const reg paramreg[4] = { RDI, RSI, RDX, RCX };
 
 static uint8_t stack(Gen *gen, uint8_t size);
 static uint8_t modrm(uint8_t mod, uint8_t op, uint8_t rm);
@@ -205,6 +212,19 @@ static void gen_fun(Gen *gen, size_t ndx)
 		0x48, 0x89, 0xE5 	/* mov %rsi, %rbp */
 	};
 	elf_write(gen->elf, prologue, sizeof(prologue));
+
+	/* Move parameters onto stack */
+	Scope *scope = gen->tfile->scopes[tfun->scope];
+	for (size_t i = 0; i < scope->nvars; ++i) {
+		TVariable *v = gen->tfile->tvariables[scope->vars[i]];
+		Type *t = gen->tfile->types[v->type];
+
+		uint8_t data[] = {
+			0x48, 0x89, modrm(1, paramreg[i], RBP), stack(gen, t->size),
+		};
+
+		elf_write(gen->elf, data, sizeof(data));
+	}
 
 	for (size_t i = 0; i < tfun->block->nstatements; ++i) {
 		TStatement *statement = tfun->block->statements[i];
