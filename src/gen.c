@@ -22,7 +22,7 @@
 /* Set the nth bit of some value to state (s) */
 #define NBITSET(v, n, s) (v |= s << n)
 
-/* r/m part of ModR/M; aka, the register number */
+/* Register number */
 typedef unsigned char reg;
 
 static const reg RAX = 0;
