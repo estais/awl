@@ -12,6 +12,8 @@
 typedef struct Gen {
 	TFile *tfile;
 	Elf *elf;
+
+	uint8_t stackoff;
 } Gen;
 
 Gen *gen_new();

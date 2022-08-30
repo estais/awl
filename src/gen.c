@@ -11,6 +11,8 @@
 #include "mem.h"
 #include "err.h"
 
+#define STACKOFF_DEFAULT 4
+
 /* Get the nth byte of some value */
 #define NBYTE(v, n) ((v >> 8 * n) & 0xFF)
 
@@ -25,6 +27,7 @@ typedef unsigned char reg;
 
 static const reg RAX = 0;
 
+static uint8_t stack(Gen *gen, uint8_t size);
 static uint8_t modrm(uint8_t mod, uint8_t op, uint8_t rm);
 static void gen_expr(Gen *gen, TExpression *expression, reg dest);
 static void gen_statement(Gen *gen, TStatement *statement);
@@ -46,6 +49,7 @@ void gen_run(Gen *gen, const char *srcpath, TFile *tfile)
 
 	gen->tfile = tfile;
 	gen->elf = elf_new(elfpath);
+	gen->stackoff = STACKOFF_DEFAULT;
 
 	elf_add_section(gen->elf, ".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
 
@@ -60,6 +64,13 @@ void gen_reset(Gen *gen)
 {
 	gen->tfile = NULL;
 	gen->elf = NULL;
+}
+
+static uint8_t stack(Gen *gen, uint8_t size)
+{
+	uint8_t curr = gen->stackoff;
+	gen->stackoff += size;
+	return -curr;
 }
 
 static uint8_t modrm(uint8_t mod, uint8_t op, uint8_t rm)
@@ -206,6 +217,8 @@ static void gen_fun(Gen *gen, size_t ndx)
 		0xC3, 			/* ret */
 	};
 	elf_write(gen->elf, epilogue, sizeof(epilogue));
+
+	gen->stackoff = STACKOFF_DEFAULT;
 }
 
 static const char *fileext(const char *path)
