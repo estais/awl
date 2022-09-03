@@ -39,6 +39,7 @@ typedef enum t_node_variant {
 	TEXPRESSION_NUMLIT,
 
 	TSTATEMENT_RETURN,
+	TSTATEMENT_RETURN_NOVAL,
 } t_node_variant;
 
 typedef struct Scope {
@@ -99,7 +100,7 @@ typedef struct TFile {
 
 	TFun **tfuns;
 	size_t ntfuns;
-	typendx fretcurs; /* when handling a function, store its return type here */
+	typendx funret; /* when handling a function, store its return type here */
 
 	TVariable **tvariables;
 	size_t ntvariables;

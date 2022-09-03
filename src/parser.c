@@ -245,8 +245,15 @@ static PStatement *parse_statement(Parser *parser)
 
 	switch (istk(parser, TOKEN_RETURN)) {
 		case TOKEN_RETURN: {
+			pstatement->span = current(parser).span;
 			advance(parser); /* return */
-			
+
+			if (istk(parser, TOKEN_SEMICOLON)) {
+				pstatement->variant = PSTATEMENT_RETURN_NOVAL;
+				reqsemi = true;
+				break;
+			}
+
 			pstatement->variant = PSTATEMENT_RETURN;
 			pstatement->expr = parse_expression(parser);
 

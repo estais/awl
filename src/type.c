@@ -88,7 +88,7 @@ TFile *typechecker_run(Typechecker *tc, File *file, PFile *pfile)
 	tc->tfile->nscopes = 0;
 	tc->tfile->tfuns = NULL;
 	tc->tfile->ntfuns = 0;
-	tc->tfile->fretcurs = NONDX;
+	tc->tfile->funret = NONDX;
 	tc->tfile->tvariables = 0;
 	tc->tfile->ntvariables = 0;
 	tc->tfile->types = NULL;
@@ -182,9 +182,19 @@ static TStatement *check_statement(Typechecker *tc, PStatement *pstatement)
 
 	switch (pstatement->variant) {
 		case PSTATEMENT_RETURN: {
+			if (tc->tfile->funret == PRIM_U0) {
+				err_source(tc->file, pstatement->span, "should not return a value");
+			}
+
 			tstatement->variant = TSTATEMENT_RETURN;
-			tstatement->expr = check_expression(tc, pstatement->expr, tc->tfile->fretcurs);
+			tstatement->expr = check_expression(tc, pstatement->expr, tc->tfile->funret);
 			break;
+		}
+		case PSTATEMENT_RETURN_NOVAL: {
+			if (tc->tfile->funret != PRIM_U0) {
+				err_source(tc->file, pstatement->span, "should return a value");
+			}
+			tstatement->variant = TSTATEMENT_RETURN_NOVAL;
 		}
 		default: break;
 	}
@@ -238,7 +248,7 @@ static TFun *check_fun(Typechecker *tc, PFun *pfun)
 		tfun->rettype = check_type(tc, pfun->rettype);
 	}
 
-	tc->tfile->fretcurs = tfun->rettype;
+	tc->tfile->funret = tfun->rettype;
 
 	tfun->block = check_block(tc, pfun->block, tfun->scope);
 

@@ -42,6 +42,7 @@ typedef enum p_node_variant {
 	PEXPRESSION_NUMLIT,
 
 	PSTATEMENT_RETURN,
+	PSTATEMENT_RETURN_NOVAL,
 } p_node_variant;
 
 typedef struct PType {
@@ -67,6 +68,7 @@ typedef struct PExpression {
 
 typedef struct PStatement {
 	p_node_variant variant;
+	Span span;
 
 	union {
 		PExpression *expr;
